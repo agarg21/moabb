@@ -504,6 +504,7 @@ class TestWithinSess:
         process_pipeline = self.eval.paradigm.make_process_pipelines(dataset)[0]
 
         self.eval.optuna = True
+        self.eval.time_out = 1  # stop after the trial in flight: tests the path, not search quality
 
         results = list(
             self.eval.evaluate(
@@ -515,6 +516,7 @@ class TestWithinSess:
         )
 
         self.eval.optuna = False
+        self.eval.time_out = 60 * 15
 
         # We should get 4 results, 2 sessions 2 subjects
         assert len(results) == 4
@@ -538,6 +540,8 @@ class TestWithinSess:
             datasets=[dataset],
             hdf5_path=str(tmp_path),
             optuna=optuna,
+            # 1 s budget: Optuna stops after the trial in flight (tests the path, not search quality)
+            **({"time_out": 1} if optuna else {}),
         )
         param_grid = {"C": {"csp__metric": ["euclid", "riemann"]}}
         process_pipeline = evaluation.paradigm.make_process_pipelines(dataset)[0]
